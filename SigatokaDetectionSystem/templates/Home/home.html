@@ -1,0 +1,45 @@
+{% extends 'Home/base.html' %}
+
+{% load static %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+
+<!-- Cabecera -->
+<section class="page-section clearfix">
+  <div class="container">
+    <div class="intro">
+      <img class="intro-img img-fluid mb-3 mb-lg-0 rounded" src="{% static 'core/img/grade.jpg' %}" alt="">
+      <div class="intro-text left-0 text-center bg-faded p-5 rounded">
+        <h2 class="section-heading mb-4">
+          <span class="section-heading-upper">Presentado Por</span>
+          <span class="section-heading-lower">Ing. Samantha Maisincho</span>
+        </h2>
+        <p class="mb-3">Comparativa entre Redes Neuronales Convolucionales y Vision Transformer para detectar Sigatoka Negra
+        </p>
+        <div class="intro-button mx-auto">
+          <a class="btn btn-primary btn-xl" href="">Visítanos</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mensaje -->
+<section class="page-section cta">
+    <div class="container">
+      <div class="row">
+        <div class="col-xl-9 mx-auto">
+          <div class="cta-inner text-center rounded">
+            <h2 class="section-heading mb-4">
+              <span class="section-heading-upper">Máster Universitario en Inteligencia artificial</span>
+              <span class="section-heading-lower">Comparativa de soluciones</span>
+            </h2>
+            <p class="mb-0">El problema central que aborda este trabajo es la detección temprana de Sigatoka Negra, una enfermedad devastadora para los cultivos de banano y plátano que afecta gravemente la producción y la calidad de los frutos; esta enfermedad, causada por el hongo Mycosphaerella fijiensis, presenta un alto riesgo para los productores, ya que reduce la capacidad fotosintética de las plantas al destruir las hojas, lo que resulta en pérdidas económicas significativas si no se controla a tiempo; la falta de métodos efectivos y automáticos de detección temprana en etapas iniciales sigue siendo uno de los principales retos que enfrentan tanto la comunidad agrícola como la científica.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

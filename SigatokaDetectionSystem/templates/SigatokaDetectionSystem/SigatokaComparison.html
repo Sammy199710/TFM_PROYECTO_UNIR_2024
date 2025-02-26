@@ -1,0 +1,189 @@
+{% extends 'Home/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="text-center mb-4">Comparación ViT vs CNN</h2>
+
+    <div class="row justify-content-center">
+        <!-- Contenedor del gráfico de Accuracy -->
+        <div class="col-md-5 mb-4">
+            <div class="chart-container bg-white p-3 rounded shadow">
+                <h4 class="text-center">Accuracy Comparison</h4>
+                <div style="width: 100%; height: 270px;">
+                    <canvas id="accuracyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenedor del gráfico de Loss -->
+        <div class="col-md-5 mb-4">
+            <div class="chart-container bg-white p-3 rounded shadow">
+                <h4 class="text-center">Loss Comparison</h4>
+                <div style="width: 100%; height: 270px;">
+                    <canvas id="lossChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <!-- Tabla de métricas para ViT -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #f0ad4e;">
+                    <h5 class="mb-0">ViT - Classification Report</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead class="thead-light">
+                            <tr class="bg-light">
+                                <th></th> <!-- Columna sin título para label -->
+                                <th class="text-center">precision</th>
+                                <th class="text-center">recall</th>
+                                <th class="text-center">f1-score</th>
+                                <th class="text-center">support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matrix in vit_matrices|slice:":4" %}
+                                <tr>
+                                    <td class="text-center">{{ matrix.class_label }}</td>
+                                    <td class="text-center">{{ matrix.precision|floatformat:2 }}</td>
+                                    <td class="text-center">{{ matrix.recall|floatformat:2 }}</td>
+                                    <td class="text-center">{{ matrix.f1_score|floatformat:2 }}</td>
+                                    <td class="text-center">{{ matrix.support }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de métricas para CNN -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow">
+                <div class="card-header text-white" style="background-color: #d9534f;">
+                    <h5 class="mb-0">CNN - Classification Report</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-bordered table-sm mb-0">
+                        <thead class="thead-light">
+                            <tr class="bg-light">
+                                <th></th> <!-- Columna sin título para label -->
+                                <th class="text-center">precision</th>
+                                <th class="text-center">recall</th>
+                                <th class="text-center">f1-score</th>
+                                <th class="text-center">support</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matrix in cnn_matrices|slice:":4" %}
+                                <tr>
+                                    <td class="text-center">{{ matrix.class_label }}</td>
+                                    <td class="text-center">{{ matrix.precision|floatformat:2 }}</td>
+                                    <td class="text-center">{{ matrix.recall|floatformat:2 }}</td>
+                                    <td class="text-center">{{ matrix.f1_score|floatformat:2 }}</td>
+                                    <td class="text-center">{{ matrix.support }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cargar datos de ViT y CNN
+    const vitData = JSON.parse('{{ vit_data_json|escapejs }}');
+    const cnnData = JSON.parse('{{ cnn_data_json|escapejs }}');
+
+    // Crear un solo conjunto de labels basado en epochs (X-axis)
+    const epochs = [...new Set([...vitData.epochs, ...cnnData.epochs])].sort((a, b) => a - b);
+
+    // Función para mapear valores y rellenar ceros si no existen
+    function mapDataToEpochs(sourceData, epochs) {
+        return epochs.map(epoch => {
+            let index = sourceData.epochs.indexOf(epoch);
+            return index !== -1 ? sourceData.accuracy[index] : null;
+        });
+    }
+
+    // Datos de Accuracy
+    const accuracyData = {
+        labels: epochs,
+        datasets: [
+            {
+                label: 'ViT Accuracy',
+                data: mapDataToEpochs(vitData, epochs),
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                borderWidth: 2,
+                tension: 0.2,
+                fill: true
+            },
+            {
+                label: 'CNN Accuracy',
+                data: mapDataToEpochs(cnnData, epochs),
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                borderWidth: 2,
+                tension: 0.2,
+                fill: true
+            }
+        ]
+    };
+
+    // Datos de Loss
+    const lossData = {
+        labels: epochs,
+        datasets: [
+            {
+                label: 'ViT Loss',
+                data: mapDataToEpochs({ epochs: vitData.epochs, accuracy: vitData.loss }, epochs),
+                borderColor: 'rgb(54, 235, 162)',
+                backgroundColor: 'rgba(54, 235, 162, 0.1)',
+                borderWidth: 2,
+                tension: 0.2,
+                fill: true
+            },
+            {
+                label: 'CNN Loss',
+                data: mapDataToEpochs({ epochs: cnnData.epochs, accuracy: cnnData.loss }, epochs),
+                borderColor: 'rgb(255, 165, 0)',
+                backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                borderWidth: 2,
+                tension: 0.2,
+                fill: true
+            }
+        ]
+    };
+
+    // Configuración global de Chart.js
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: { beginAtZero: true, max: 1 }
+        }
+    };
+
+    // Renderizar gráficos con Chart.js
+    new Chart(document.getElementById('accuracyChart'), {
+        type: 'line',
+        data: accuracyData,
+        options: chartOptions
+    });
+
+    new Chart(document.getElementById('lossChart'), {
+        type: 'line',
+        data: lossData,
+        options: chartOptions
+    });
+</script>
+{% endblock %}
